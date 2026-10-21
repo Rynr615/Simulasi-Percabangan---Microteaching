@@ -1,0 +1,222 @@
+/* ==========================================================================
+   css/style.css - Media Pembelajaran Algoritma Percabangan
+   Gaya kustom: keyframes animasi, pola latar, drag ghost, dan cetak laporan
+   ========================================================================== */
+
+/* Latar Belakang Pola Grid Kertas Berpetak Ramah Edukasi */
+.bg-grid-pattern {
+  background-color: #F8FAFC;
+  background-image: 
+    linear-gradient(to right, rgba(203, 213, 225, 0.45) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(203, 213, 225, 0.45) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+/* Tipografi Space Grotesk & JetBrains Mono */
+body {
+  font-family: 'Space Grotesk', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code, pre, .font-mono {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+/* Mode Guru: Perbesaran Ukuran Teks untuk Proyektor Kelas */
+body.teacher-mode {
+  font-size: 1.15rem;
+}
+body.teacher-mode .text-xs { font-size: 0.85rem; }
+body.teacher-mode .text-sm { font-size: 0.95rem; }
+body.teacher-mode .text-base { font-size: 1.15rem; }
+body.teacher-mode .text-lg { font-size: 1.25rem; }
+body.teacher-mode .text-xl { font-size: 1.45rem; }
+
+/* Animasi Denyut Evaluasi Blok */
+@keyframes pulseEvaluation {
+  0%, 100% {
+    box-shadow: 0 0 0 3px rgba(234, 179, 8, 0.45);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 7px rgba(234, 179, 8, 0.75);
+    transform: scale(1.01);
+  }
+}
+
+.evaluating-pulse {
+  animation: pulseEvaluation 0.8s ease-in-out infinite;
+  z-index: 20;
+  position: relative;
+}
+
+/* Transisi dan Animasi Sirine Berkedip */
+@keyframes sirenFlash {
+  0%, 100% {
+    opacity: 0.25;
+    transform: scale(0.95);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 12px rgba(239, 68, 68, 0.9));
+  }
+}
+
+.siren-active {
+  animation: sirenFlash 0.5s ease-in-out infinite;
+}
+
+/* Animasi Pergerakan Palang Kereta Api */
+.barrier-arm {
+  transform-origin: 20px 20px;
+  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.barrier-down {
+  transform: rotate(0deg);
+}
+
+.barrier-up {
+  transform: rotate(-78deg);
+}
+
+/* Animasi Kereta Meluncur */
+@keyframes trainSlide {
+  0% {
+    transform: translateY(-240px);
+  }
+  100% {
+    transform: translateY(480px);
+  }
+}
+
+/* Struk Kasir Kantin Mencetak Turun */
+@keyframes slideDownReceipt {
+  from {
+    transform: translateY(-16px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.receipt-enter {
+  animation: slideDownReceipt 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Tiket Kupon Memantul */
+@keyframes couponPop {
+  0% {
+    transform: scale(0.8) rotate(-6deg);
+    opacity: 0;
+  }
+  60% {
+    transform: scale(1.05) rotate(2deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.coupon-badge {
+  animation: couponPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Animasi Mobil Tertahan Klakson */
+@keyframes carHonkShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px) rotate(-1deg); }
+  75% { transform: translateX(3px) rotate(1deg); }
+}
+
+.car-shaking {
+  animation: carHonkShake 0.25s linear 3;
+}
+
+/* Ghost saat Drag dengan Pointer Events API */
+.drag-ghost {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0.92;
+  box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.25);
+  transform: translate(-50%, -50%) scale(1.03);
+  transition: transform 0.05s ease-out;
+}
+
+/* Drop Indicator / Drop Zone Highlight */
+.drop-zone-active {
+  outline: 2px dashed #2563EB !important;
+  outline-offset: 3px;
+  background-color: rgba(37, 99, 235, 0.08) !important;
+}
+
+/* Scrollbar Modern */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F1F5F9;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb {
+  background: #CBD5E1;
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94A3B8;
+}
+
+/* Respek Preferensi Pengurangan Gerakan Pengguna */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .evaluating-pulse, .siren-active, .car-shaking {
+    animation: none !important;
+  }
+}
+
+/* Gaya Cetak Bersih (Lembar Rekap Hasil Belajar Siswa) */
+@media print {
+  body {
+    background: #FFF !important;
+    color: #000 !important;
+    padding-bottom: 0 !important;
+  }
+  header, nav, aside, #blockPalette, #blockWorkspace, #mobileTabBar, .no-print, button, .stepper-item {
+    display: none !important;
+  }
+  #stepIdentity, #stepScenario, #stepActivity1, #stepActivity2, #stepActivity3 {
+    display: none !important;
+  }
+  #stepRecap {
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+  #recapModal {
+    position: static !important;
+    display: block !important;
+    background: transparent !important;
+    padding: 0 !important;
+  }
+  #recapModalContent {
+    box-shadow: none !important;
+    border: 1px solid #CBD5E1 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}

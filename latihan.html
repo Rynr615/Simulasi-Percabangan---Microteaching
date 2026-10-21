@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Latihan LKS Digital - Sistem Kantin Sekolah (SMA Fase E)</title>
+
+  <!-- Google Fonts: Space Grotesk & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS via CDN 3.4.17 dengan Konfigurasi Inline -->
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb', // Biru Utama
+              700: '#1d4ed8'
+            }
+          },
+          fontFamily: {
+            sans: ['Space Grotesk', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Lucide Icons CDN 0.469.0 -->
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+
+  <!-- Kustom CSS Terpisah -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-grid-pattern text-slate-800 antialiased min-h-screen flex flex-col selection:bg-blue-600 selection:text-white pb-20 lg:pb-8">
+
+  <!-- =========================================================================
+       1. HEADER UTAMA: Navigasi Halaman, Kontrol Suara, Mode Guru, Bantuan
+       ========================================================================= -->
+  <header class="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40 px-4 py-2.5 shadow-sm">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <!-- Identitas Media Pembelajaran -->
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-500/30">
+          <i data-lucide="store" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-base sm:text-lg text-slate-900 leading-tight">LKS Digital Kantin Sekolah</h1>
+          <p class="text-xs text-slate-500 hidden sm:block">Informatika Fase E &bull; Percabangan If-Then &amp; If-Then-Else</p>
+        </div>
+      </div>
+
+      <!-- Segmented Control Navigasi Dua Halaman: Simulasi vs Latihan LKS -->
+      <nav class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-bold shadow-inner">
+        <a href="index.html" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 flex items-center space-x-1.5 transition" title="Beralih ke Simulasi Interaktif">
+          <i data-lucide="train-front" class="w-4 h-4 text-slate-500"></i>
+          <span>Simulasi</span>
+        </a>
+        <a href="latihan.html" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white shadow-sm flex items-center space-x-1.5 transition" title="Halaman Latihan LKS yang sedang aktif">
+          <i data-lucide="file-check-2" class="w-4 h-4"></i>
+          <span>Latihan LKS</span>
+        </a>
+      </nav>
+
+      <!-- Bar Aksi Tambahan: Suara, Mode Guru, Bantuan -->
+      <div class="flex items-center space-x-2">
+        <!-- Sakelar Audio -->
+        <button id="btnToggleAudio" class="p-2 sm:px-3 sm:py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center space-x-1.5 transition focus:ring-2 focus:ring-blue-500" title="Sakelar Efek Suara">
+          <i data-lucide="volume-x" class="w-4 h-4 text-slate-500" id="audioIcon"></i>
+          <span class="hidden md:inline" id="audioLabel">Suara: Mati</span>
+        </button>
+
+        <!-- Mode Guru / Proyektor Kelas -->
+        <!-- <button id="btnToggleTeacherMode" class="p-2 sm:px-3 sm:py-1.5 rounded-xl border border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs font-bold flex items-center space-x-1.5 transition focus:ring-2 focus:ring-indigo-500" title="Mode Guru / Perbesar Teks Proyektor">
+          <i data-lucide="presentation" class="w-4 h-4 text-indigo-600"></i>
+          <span class="hidden md:inline">Mode Guru</span>
+        </button> -->
+
+        <!-- Panduan Bantuan -->
+        <button id="btnOpenTutorialModal" class="p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 transition focus:ring-2 focus:ring-blue-500" title="Panduan Penggunaan LKS">
+          <i data-lucide="circle-help" class="w-5 h-5"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- =========================================================================
+       2. STEPPER ALUR PEMBELAJARAN LKS (Urutan Aktivitas)
+       ========================================================================= -->
+  <section class="bg-white border-b border-slate-200 py-3 px-4 shadow-sm">
+    <div class="max-w-7xl mx-auto flex items-center justify-between overflow-x-auto no-scrollbar gap-2 sm:gap-4">
+      <!-- Step 0: Identitas -->
+      <div class="stepper-item flex items-center space-x-2 cursor-pointer flex-shrink-0" onclick="window.App.pageLatihan.goToStep(0)">
+        <div class="stepper-circle w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs ring-4 ring-blue-100 shadow-md">1</div>
+        <span class="stepper-label text-xs font-bold text-blue-900 hidden md:block">Identitas</span>
+      </div>
+      <div class="h-0.5 w-4 sm:w-8 bg-slate-200 flex-shrink-0"></div>
+
+      <!-- Step 1: Skenario -->
+      <div class="stepper-item flex items-center space-x-2 cursor-pointer flex-shrink-0" onclick="window.App.pageLatihan.goToStep(1)">
+        <div class="stepper-circle w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center font-bold text-xs">2</div>
+        <span class="stepper-label text-xs font-medium text-slate-400 hidden md:block">Skenario</span>
+      </div>
+      <div class="h-0.5 w-4 sm:w-8 bg-slate-200 flex-shrink-0"></div>
+
+      <!-- Step 2: Aktivitas 1 -->
+      <div class="stepper-item flex items-center space-x-2 cursor-pointer flex-shrink-0" onclick="window.App.pageLatihan.goToStep(2)">
+        <div class="stepper-circle w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center font-bold text-xs">3</div>
+        <span class="stepper-label text-xs font-medium text-slate-400 hidden md:block">Aktivitas 1</span>
+      </div>
+      <div class="h-0.5 w-4 sm:w-8 bg-slate-200 flex-shrink-0"></div>
+
+      <!-- Step 3: Aktivitas 2 -->
+      <div class="stepper-item flex items-center space-x-2 cursor-pointer flex-shrink-0" onclick="window.App.pageLatihan.goToStep(3)">
+        <div class="stepper-circle w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center font-bold text-xs">4</div>
+        <span class="stepper-label text-xs font-medium text-slate-400 hidden md:block">Aktivitas 2</span>
+      </div>
+      <div class="h-0.5 w-4 sm:w-8 bg-slate-200 flex-shrink-0"></div>
+
+      <!-- Step 4: Aktivitas 3 -->
+      <div class="stepper-item flex items-center space-x-2 cursor-pointer flex-shrink-0" onclick="window.App.pageLatihan.goToStep(4)">
+        <div class="stepper-circle w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center font-bold text-xs">5</div>
+        <span class="stepper-label text-xs font-medium text-slate-400 hidden md:block">Aktivitas 3</span>
+      </div>
+      <div class="h-0.5 w-4 sm:w-8 bg-slate-200 flex-shrink-0"></div>
+
+      <!-- Step 5: Rekap -->
+      <div class="stepper-item flex items-center space-x-2 cursor-pointer flex-shrink-0" onclick="window.App.pageLatihan.goToStep(5)">
+        <div class="stepper-circle w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-slate-200 text-slate-500 flex items-center justify-center font-bold text-xs">6</div>
+        <span class="stepper-label text-xs font-medium text-slate-400 hidden md:block">Rekap Hasil</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================================================================
+       3. KONTEN UTAMA: DUA KOLOM (KIRI: AKTIVITAS LKS | KANAN: KRITERIA & PSEUDOCODE)
+       ========================================================================= -->
+  <main class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+      <!-- =====================================================================
+           KOLOM KIRI: KONTEN STEPPER AKTIF (7-8 Kolom pada Desktop)
+           ===================================================================== -->
+      <div class="lg:col-span-8 space-y-6">
+
+        <!-- -------------------------------------------------------------------
+             STEP 0: FORM IDENTITAS KELOMPOK
+             ------------------------------------------------------------------- -->
+        <section id="stepIdentity" class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
+          <div class="flex items-center space-x-3 pb-4 border-b border-slate-100">
+            <div class="w-12 h-12 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center">
+              <i data-lucide="users" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <h2 class="text-xl font-bold text-slate-900">Identitas Kelompok Belajar</h2>
+              <p class="text-xs sm:text-sm text-slate-500">Isikan identitas kelompokmu sebelum memulai pengerjaan LKS digital.</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1.5">Nama Kelompok</label>
+              <input type="text" id="groupName" placeholder="Contoh: Kelompok Algoritma 1" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-700 mb-1.5">Kelas</label>
+              <input type="text" id="groupClass" placeholder="Contoh: X MIPA 1" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-xs sm:text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition">
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-700 mb-2">Nama Anggota Kelompok (1 - 5 Siswa)</label>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <input type="text" id="member1" placeholder="1. Nama Anggota 1 (Ketua)" class="px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+              <input type="text" id="member2" placeholder="2. Nama Anggota 2" class="px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+              <input type="text" id="member3" placeholder="3. Nama Anggota 3" class="px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+              <input type="text" id="member4" placeholder="4. Nama Anggota 4" class="px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-blue-500 outline-none">
+              <input type="text" id="member5" placeholder="5. Nama Anggota 5 (Opsional)" class="px-3 py-2 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-blue-500 outline-none sm:col-span-2">
+            </div>
+          </div>
+
+          <div class="pt-4 flex justify-end">
+            <button id="btnStartLKS" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 active:scale-98 text-white rounded-xl text-xs sm:text-sm font-bold shadow-md shadow-blue-500/25 flex items-center space-x-2 transition">
+              <span>Mulai Membaca Skenario</span>
+              <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </section>
+
+        <!-- -------------------------------------------------------------------
+             STEP 1: SKENARIO MASALAH "SISTEM KANTIN SEKOLAH"
+             ------------------------------------------------------------------- -->
+        <section id="stepScenario" class="hidden bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
+          <div class="flex items-center space-x-3 pb-4 border-b border-slate-100">
+            <div class="w-12 h-12 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center">
+              <i data-lucide="book-open" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <span class="text-xs font-mono font-bold text-amber-700 uppercase tracking-wider">Tahap Orientasi Masalah</span>
+              <h2 class="text-xl font-bold text-slate-900">Skenario: Kasir Digital Kantin Sekolah</h2>
+            </div>
+          </div>
+
+          <!-- Narasi Kasus -->
+          <div class="prose prose-slate text-xs sm:text-sm leading-relaxed space-y-3.5 text-slate-700">
+            <p>
+              Kantin SMA Negeri 1 menerapkan sistem kasir mandiri digital terintegrasi untuk melayani transaksi makan siang para siswa. Untuk meningkatkan minat siswa berbelanja dan menerapkan kejujuran, pihak sekolah memberlakukan dua aturan promosi khusus:
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 my-4">
+              <!-- Promo 1: Diskon Belanja -->
+              <div class="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-950 space-y-2">
+                <div class="flex items-center space-x-2 font-bold text-sm text-emerald-800">
+                  <i data-lucide="badge-percent" class="w-5 h-5 text-emerald-600"></i>
+                  <span>1. Promo Diskon Pelajar</span>
+                </div>
+                <p class="text-xs text-emerald-900 leading-normal">
+                  Siswa yang total belanjanya mencapai <strong>minimal Rp20.000</strong> akan mendapatkan potongan harga diskon sebesar <strong>Rp2.000</strong>. Jika total belanjanya kurang dari Rp20.000, maka potongan harganya adalah <strong>Rp0</strong>.
+                </p>
+                <div class="text-[11px] font-mono bg-white/70 p-2 rounded-lg border border-emerald-300">
+                  totalBelanja &ge; 20000 &rarr; potongan = 2000<br>
+                  totalBelanja &lt; 20000 &rarr; potongan = 0
+                </div>
+              </div>
+
+              <!-- Promo 2: Kupon Undian -->
+              <div class="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-amber-950 space-y-2">
+                <div class="flex items-center space-x-2 font-bold text-sm text-amber-800">
+                  <i data-lucide="ticket" class="w-5 h-5 text-amber-600"></i>
+                  <span>2. Promo Kupon Undian</span>
+                </div>
+                <p class="text-xs text-amber-900 leading-normal">
+                  Siswa yang berbelanja <strong>mencapai Rp30.000 atau lebih</strong> berhak mendapatkan <strong>1 lembar Kupon Undian Berhadiah</strong>. Jika tidak mencapai Rp30.000, kasir cukup tidak mencetak kupon tanpa penalti apapun.
+                </p>
+                <div class="text-[11px] font-mono bg-white/70 p-2 rounded-lg border border-amber-300">
+                  totalBelanja &ge; 30000 &rarr; statusKupon = "Dapat 1 kupon"<br>
+                  (Tidak ada aksi alternatif jika tidak terpenuhi)
+                </div>
+              </div>
+            </div>
+
+            <!-- Rumus Pembayaran Akhir -->
+            <div class="p-4 bg-slate-900 text-slate-100 rounded-2xl flex items-center justify-between font-mono text-xs sm:text-sm">
+              <div class="flex items-center space-x-2.5">
+                <i data-lucide="calculator" class="w-5 h-5 text-blue-400"></i>
+                <span>Rumus Pembayaran Akhir:</span>
+              </div>
+              <span class="text-amber-400 font-bold tracking-wide">totalAkhir &larr; totalBelanja - potongan</span>
+            </div>
+          </div>
+
+          <div class="pt-4 flex items-center justify-between border-t border-slate-100">
+            <button onclick="window.App.pageLatihan.goToStep(0)" class="px-4 py-2.5 border border-slate-300 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
+              Kembali ke Identitas
+            </button>
+            <button onclick="window.App.pageLatihan.goToStep(2)" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs sm:text-sm font-bold shadow-md shadow-blue-500/25 flex items-center space-x-2 transition">
+              <span>Lanjut ke Aktivitas 1</span>
+              <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </section>
+
+        <!-- -------------------------------------------------------------------
+             STEP 2: AKTIVITAS 1 - ANALISIS MASALAH
+             ------------------------------------------------------------------- -->
+        <section id="stepActivity1" class="hidden space-y-6">
+          <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+              <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold font-mono">
+                  A1
+                </div>
+                <div>
+                  <h2 class="text-lg sm:text-xl font-bold text-slate-900">Aktivitas 1: Analisis Masalah Kantin</h2>
+                  <p class="text-xs text-slate-500">Menganalisis syarat, aksi, dan struktur percabangan yang tepat.</p>
+                </div>
+              </div>
+              <button onclick="window.App.pageLatihan.resetActivity1Slots()" class="px-3 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-100 text-slate-600 text-xs font-semibold flex items-center space-x-1.5 transition">
+                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i>
+                <span class="hidden sm:inline">Reset Slot</span>
+              </button>
+            </div>
+
+            <!-- A1.1: Cek Pemahaman Interaktif -->
+            <div class="space-y-3">
+              <div class="flex items-center space-x-2">
+                <span class="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-blue-100 text-blue-800">A1.1</span>
+                <h3 class="font-bold text-sm text-slate-800">Cek Pemahaman Logika Dasar</h3>
+              </div>
+              <p class="text-xs text-slate-500">Pilihlah salah satu opsi jawaban yang paling tepat untuk masing-masing pertanyaan di bawah ini:</p>
+              <div id="understandingQuestionsContainer"></div>
+            </div>
+
+            <hr class="border-slate-200 my-6">
+
+            <!-- A1.2 - A1.4: Tabel Analisis Menggunakan Bank Kartu -->
+            <div class="space-y-4">
+              <div>
+                <div class="flex items-center space-x-2">
+                  <span class="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-purple-100 text-purple-800">A1.2 - A1.4</span>
+                  <h3 class="font-bold text-sm text-slate-800">Tabel Analisis Logika &amp; Bank Kartu</h3>
+                </div>
+                <p class="text-xs text-slate-500 mt-0.5">Seret atau ketuk kartu dari bank kartu di sebelah kiri/atas, lalu tempatkan pada slot Tabel 1 atau Tabel 2.</p>
+              </div>
+
+              <!-- LAYOUT VERTIKAL: BANK KARTU ATAS (STICKY), DUA TABEL BERDAMPINGAN DI BAWAH -->
+              <div class="space-y-5">
+
+                <!-- BANK KARTU (STICKY, FULL-WIDTH) -->
+                <div class="sticky top-16 z-20 p-4 bg-slate-100/95 backdrop-blur rounded-2xl border-2 border-slate-300 shadow-md">
+                  <div class="flex items-center justify-between pb-2 mb-3 border-b border-slate-200">
+                    <span class="text-xs font-bold text-slate-800 flex items-center space-x-1.5">
+                      <i data-lucide="layers" class="w-4 h-4 text-blue-600"></i>
+                      <span>Bank Kartu Logika</span>
+                    </span>
+                    <span class="text-[10px] text-slate-500 italic">Ketuk kartu → ketuk slot pada tabel di bawah</span>
+                  </div>
+                  <div id="cardBankContainer" class="space-y-3"></div>
+                </div>
+
+                <!-- DUA TABEL BERDAMPINGAN -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  <!-- TABEL 1: IF-THEN (KUPON) -->
+                  <div class="border-2 border-amber-300 rounded-2xl overflow-hidden shadow-sm bg-white">
+                    <div class="bg-gradient-to-r from-amber-500 to-amber-600 text-white p-3 flex items-center justify-between">
+                      <div class="flex items-center space-x-2 font-bold text-xs sm:text-sm">
+                        <i data-lucide="ticket" class="w-4 h-4"></i>
+                        <span>Tabel 1: Kupon Undian</span>
+                      </div>
+                      <span class="text-[10px] bg-amber-800/80 px-2.5 py-0.5 rounded-full font-mono font-semibold">1 Jalur</span>
+                    </div>
+                    <div class="p-4 space-y-3">
+                      <div>
+                        <span class="block text-[11px] font-bold text-slate-700 mb-1 flex items-center space-x-1">
+                          <i data-lucide="help-circle" class="w-3.5 h-3.5 text-blue-600"></i>
+                          <span>Syarat (totalBelanja &ge; Rp30.000):</span>
+                        </span>
+                        <div id="slot_a1_kupon_cond"></div>
+                      </div>
+                      <div>
+                        <span class="block text-[11px] font-bold text-emerald-800 mb-1 flex items-center space-x-1">
+                          <i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-600"></i>
+                          <span>Aksi Jika True (MAKA):</span>
+                        </span>
+                        <div id="slot_a1_kupon_then"></div>
+                      </div>
+                      <div>
+                        <span class="block text-[11px] font-bold text-slate-600 mb-1 flex items-center space-x-1">
+                          <i data-lucide="corner-down-right" class="w-3.5 h-3.5 text-slate-400"></i>
+                          <span>Aksi Jika False (SELAIN ITU):</span>
+                        </span>
+                        <div id="slot_a1_kupon_else"></div>
+                      </div>
+                      <div>
+                        <span class="block text-[11px] font-bold text-slate-700 mb-1 flex items-center space-x-1">
+                          <i data-lucide="git-branch" class="w-3.5 h-3.5 text-purple-600"></i>
+                          <span>Jenis Struktur:</span>
+                        </span>
+                        <div id="slot_a1_kupon_struct"></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- TABEL 2: IF-THEN-ELSE (DISKON) -->
+                  <div class="border-2 border-blue-300 rounded-2xl overflow-hidden shadow-sm bg-white">
+                    <div class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white p-3 flex items-center justify-between">
+                      <div class="flex items-center space-x-2 font-bold text-xs sm:text-sm">
+                        <i data-lucide="badge-percent" class="w-4 h-4"></i>
+                        <span>Tabel 2: Diskon Pelajar</span>
+                      </div>
+                      <span class="text-[10px] bg-blue-900/80 px-2.5 py-0.5 rounded-full font-mono font-semibold">2 Jalur</span>
+                    </div>
+                    <div class="p-4 space-y-3">
+                      <div>
+                        <span class="block text-[11px] font-bold text-slate-700 mb-1 flex items-center space-x-1">
+                          <i data-lucide="help-circle" class="w-3.5 h-3.5 text-blue-600"></i>
+                          <span>Syarat (totalBelanja &ge; Rp20.000):</span>
+                        </span>
+                        <div id="slot_a1_diskon_cond"></div>
+                      </div>
+                      <div>
+                        <span class="block text-[11px] font-bold text-emerald-800 mb-1 flex items-center space-x-1">
+                          <i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-600"></i>
+                          <span>Aksi Jika True (MAKA):</span>
+                        </span>
+                        <div id="slot_a1_diskon_then"></div>
+                      </div>
+                      <div>
+                        <span class="block text-[11px] font-bold text-indigo-800 mb-1 flex items-center space-x-1">
+                          <i data-lucide="corner-down-right" class="w-3.5 h-3.5 text-indigo-500"></i>
+                          <span>Aksi Jika False (SELAIN ITU):</span>
+                        </span>
+                        <div id="slot_a1_diskon_else"></div>
+                      </div>
+                      <div>
+                        <span class="block text-[11px] font-bold text-slate-700 mb-1 flex items-center space-x-1">
+                          <i data-lucide="git-branch" class="w-3.5 h-3.5 text-purple-600"></i>
+                          <span>Jenis Struktur:</span>
+                        </span>
+                        <div id="slot_a1_diskon_struct"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Tombol Navigasi Bawah -->
+            <div class="pt-4 flex items-center justify-between border-t border-slate-100">
+              <button onclick="window.App.pageLatihan.goToStep(1)" class="px-4 py-2.5 border border-slate-300 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
+                Kembali ke Skenario
+              </button>
+              <button onclick="window.App.pageLatihan.goToStep(3)" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs sm:text-sm font-bold shadow-md shadow-blue-500/25 flex items-center space-x-2 transition">
+                <span>Lanjut ke Aktivitas 2</span>
+                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- -------------------------------------------------------------------
+             STEP 3: AKTIVITAS 2 - PERANCANGAN ALGORITMA
+             ------------------------------------------------------------------- -->
+        <section id="stepActivity2" class="hidden space-y-6">
+          <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
+            <div class="flex items-center space-x-3 pb-4 border-b border-slate-100">
+              <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold font-mono">
+                A2
+              </div>
+              <div>
+                <h2 class="text-lg sm:text-xl font-bold text-slate-900">Aktivitas 2: Perancangan Algoritma</h2>
+                <p class="text-xs text-slate-500">Definisikan nama sistem, tipe data deklarasi, dan susun blok percabangan kasir.</p>
+              </div>
+            </div>
+
+            <!-- Bagian 1: Formulir Nama Sistem & Deklarasi Variabel -->
+            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-4">
+              <div class="flex items-center space-x-2">
+                <span class="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-indigo-100 text-indigo-800">A2.1</span>
+                <h3 class="font-bold text-xs sm:text-sm text-slate-800">Nama Sistem &amp; Deklarasi Variabel</h3>
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-1">NAMA SISTEM (ALGORITMA):</label>
+                <input type="text" id="declarationSystemName" value="KantinSekolah" class="w-full sm:w-80 px-3 py-2 rounded-xl border border-slate-300 font-mono text-xs font-bold text-blue-700 focus:ring-2 focus:ring-blue-500 outline-none">
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-700 mb-2">Tipe Data Variabel (DEKLARASI):</label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 font-mono text-xs">
+                  <!-- totalBelanja -->
+                  <div class="p-2.5 bg-white rounded-xl border border-slate-200 flex items-center justify-between">
+                    <div>
+                      <span class="font-bold text-slate-800">totalBelanja</span>
+                      <span class="block text-[10px] text-slate-400 font-sans">Total harga belanjaan</span>
+                    </div>
+                    <select id="decl_type_totalBelanja" class="px-2 py-1 border border-slate-300 rounded font-semibold text-indigo-700">
+                      <option value="integer">integer</option>
+                      <option value="string">string</option>
+                      <option value="boolean">boolean</option>
+                    </select>
+                  </div>
+
+                  <!-- potongan -->
+                  <div class="p-2.5 bg-white rounded-xl border border-slate-200 flex items-center justify-between">
+                    <div>
+                      <span class="font-bold text-slate-800">potongan</span>
+                      <span class="block text-[10px] text-slate-400 font-sans">Diskon promo pelajar</span>
+                    </div>
+                    <select id="decl_type_potongan" class="px-2 py-1 border border-slate-300 rounded font-semibold text-indigo-700">
+                      <option value="integer">integer</option>
+                      <option value="string">string</option>
+                      <option value="boolean">boolean</option>
+                    </select>
+                  </div>
+
+                  <!-- statusKupon -->
+                  <div class="p-2.5 bg-white rounded-xl border border-slate-200 flex items-center justify-between">
+                    <div>
+                      <span class="font-bold text-slate-800">statusKupon</span>
+                      <span class="block text-[10px] text-slate-400 font-sans">Status kupon undian</span>
+                    </div>
+                    <select id="decl_type_statusKupon" class="px-2 py-1 border border-slate-300 rounded font-semibold text-indigo-700">
+                      <option value="string">string</option>
+                      <option value="integer">integer</option>
+                      <option value="boolean">boolean</option>
+                    </select>
+                  </div>
+
+                  <!-- totalAkhir -->
+                  <div class="p-2.5 bg-white rounded-xl border border-slate-200 flex items-center justify-between">
+                    <div>
+                      <span class="font-bold text-slate-800">totalAkhir</span>
+                      <span class="block text-[10px] text-slate-400 font-sans">Bayar bersih kasir</span>
+                    </div>
+                    <select id="decl_type_totalAkhir" class="px-2 py-1 border border-slate-300 rounded font-semibold text-indigo-700">
+                      <option value="integer">integer</option>
+                      <option value="string">string</option>
+                      <option value="boolean">boolean</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bagian 2: Workspace Blok Percabangan (Engine blocks.js) -->
+            <div class="space-y-3">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                  <span class="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-blue-100 text-blue-800">A2.2 - A2.4</span>
+                  <h3 class="font-bold text-xs sm:text-sm text-slate-800">Workspace Blok Logika Kasir Kantin</h3>
+                </div>
+                <div class="flex items-center space-x-1.5">
+                  <button id="btnUndo" class="p-1.5 border border-slate-300 rounded-lg hover:bg-slate-100 text-slate-600 disabled:opacity-40 transition" title="Undo (Ctrl+Z)" onclick="window.App.blocks.undo()">
+                    <i data-lucide="undo" class="w-4 h-4"></i>
+                  </button>
+                  <button id="btnRedo" class="p-1.5 border border-slate-300 rounded-lg hover:bg-slate-100 text-slate-600 disabled:opacity-40 transition" title="Redo (Ctrl+Y)" onclick="window.App.blocks.redo()">
+                    <i data-lucide="redo" class="w-4 h-4"></i>
+                  </button>
+                  <button class="px-2.5 py-1.5 border border-rose-200 text-rose-700 hover:bg-rose-50 rounded-lg text-xs font-semibold transition" onclick="window.App.blocks.clearWorkspace()">
+                    Kosongkan
+                  </button>
+                </div>
+              </div>
+
+              <!-- Palet Blok & Workspace Kontainer -->
+              <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                <!-- Palet Blok (4 Kolom) -->
+                <div class="md:col-span-5 bg-slate-50 p-3.5 rounded-2xl border border-slate-200" id="blockPaletteList"></div>
+
+                <!-- Area Susun Blok Workspace (7 Kolom) -->
+                <div class="md:col-span-7 bg-white p-3.5 rounded-2xl border-2 border-slate-200 min-h-[320px]" id="blockWorkspaceList"></div>
+              </div>
+            </div>
+
+            <!-- Bagian 3: Coba 1 Angka (Simulasi Cepat Input) -->
+            <div class="p-4 rounded-2xl bg-slate-900 text-white space-y-3">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                  <i data-lucide="play" class="w-4 h-4 text-emerald-400"></i>
+                  <span class="font-bold text-xs sm:text-sm">Fitur Uji Cepat: Coba 1 Angka</span>
+                </div>
+                <span class="text-[11px] text-slate-400">Uji logika blokmu secara instan</span>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-2">
+                <input type="number" id="quickTestInput" value="20000" placeholder="Masukkan total_belanja" class="px-3 py-1.5 rounded-lg bg-slate-800 text-amber-300 font-mono text-xs border border-slate-700 w-44 outline-none focus:border-amber-400">
+                <button id="btnRunQuickTest" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold transition flex items-center space-x-1 shadow-sm">
+                  <i data-lucide="play" class="w-3.5 h-3.5"></i>
+                  <span>Jalankan Cepat</span>
+                </button>
+                <div class="flex items-center space-x-1 text-[11px]">
+                  <span class="text-slate-400">Preset:</span>
+                  <button class="quick-preset-btn px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono" data-amount="15000">15.000</button>
+                  <button class="quick-preset-btn px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono" data-amount="20000">20.000</button>
+                  <button class="quick-preset-btn px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono" data-amount="23500">23.500</button>
+                  <button class="quick-preset-btn px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono" data-amount="30000">30.000</button>
+                </div>
+              </div>
+
+              <div id="quickTestResultBox" class="hidden pt-1"></div>
+            </div>
+
+            <!-- Tombol Navigasi Bawah -->
+            <div class="pt-4 flex items-center justify-between border-t border-slate-100">
+              <button onclick="window.App.pageLatihan.goToStep(2)" class="px-4 py-2.5 border border-slate-300 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
+                Kembali ke Aktivitas 1
+              </button>
+              <button onclick="window.App.pageLatihan.goToStep(4)" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs sm:text-sm font-bold shadow-md shadow-blue-500/25 flex items-center space-x-2 transition">
+                <span>Lanjut ke Aktivitas 3</span>
+                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- -------------------------------------------------------------------
+             STEP 4: AKTIVITAS 3 - PENGUJIAN ALGORITMA
+             ------------------------------------------------------------------- -->
+        <section id="stepActivity3" class="hidden space-y-6">
+          <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+              <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold font-mono">
+                  A3
+                </div>
+                <div>
+                  <h2 class="text-lg sm:text-xl font-bold text-slate-900">Aktivitas 3: Pengujian Algoritma</h2>
+                  <p class="text-xs text-slate-500">Isi prediksi sel &rarr; Jalankan pengujian &rarr; Bandingkan dengan kunci LKS.</p>
+                </div>
+              </div>
+
+              <div class="flex items-center space-x-2">
+                <button data-run-scenario-tests onclick="window.App.pageLatihan.runAllScenarioTests()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 active:scale-98 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-500/20 flex items-center space-x-1.5 transition">
+                  <i data-lucide="play" class="w-4 h-4"></i>
+                  <span>Jalankan Pengujian</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Banner Peringatan Hasil Pengujian Usang jika Blok Diubah -->
+            <div id="staleTestWarning" class="hidden p-3.5 bg-amber-50 border-2 border-amber-400 text-amber-900 rounded-2xl flex items-center justify-between">
+              <div class="flex items-center space-x-2.5 text-xs">
+                <i data-lucide="alert-triangle" class="w-5 h-5 text-amber-600 flex-shrink-0"></i>
+                <div>
+                  <strong class="font-bold">Algoritma telah dimodifikasi di Aktivitas 2!</strong>
+                  <p class="text-amber-800">Hasil pengujian di bawah ini usang. Silakan tekan tombol <strong>"Jalankan Pengujian"</strong> ulang untuk memverifikasi.</p>
+                </div>
+              </div>
+              <button data-run-scenario-tests onclick="window.App.pageLatihan.runAllScenarioTests()" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-bold transition flex-shrink-0 ml-2">
+                Uji Ulang
+              </button>
+            </div>
+
+            <!-- Panggung Kasir Interaktif (Struk & Kupon Keluar) -->
+            <div>
+              <div class="text-xs font-bold text-slate-700 mb-2 flex items-center space-x-1.5">
+                <i data-lucide="store" class="w-4 h-4 text-blue-600"></i>
+                <span>Panggung Simulasi Kasir &amp; Mesin Cetak Struk</span>
+              </div>
+              <div id="kantinStageLiveContainer"></div>
+            </div>
+
+            <!-- Tabel Skenario Pengujian (A - F) -->
+            <div class="border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+              <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                  <thead>
+                    <tr class="bg-slate-100 text-slate-700 text-[11px] font-bold uppercase tracking-wider border-b border-slate-200">
+                      <th class="p-3 w-1/4">Skenario Transaksi</th>
+                      <th class="p-3 w-1/4">Prediksi Siswa</th>
+                      <th class="p-3 w-1/4">Hasil Algoritma Siswa</th>
+                      <th class="p-3 w-1/6">Kunci LKS</th>
+                      <th class="p-3 text-center">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="testScenarioTableBody"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Tombol Navigasi Bawah -->
+            <div class="pt-4 flex items-center justify-between border-t border-slate-100">
+              <button onclick="window.App.pageLatihan.goToStep(3)" class="px-4 py-2.5 border border-slate-300 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
+                Kembali ke Aktivitas 2
+              </button>
+              <button onclick="window.App.pageLatihan.goToStep(5)" class="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs sm:text-sm font-bold shadow-md shadow-blue-500/25 flex items-center space-x-2 transition">
+                <span>Lihat Rekap Hasil Belajar</span>
+                <i data-lucide="arrow-right" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <!-- -------------------------------------------------------------------
+             STEP 5: REKAP HASIL & KARTU INFORMASI AKTIVITAS 4
+             ------------------------------------------------------------------- -->
+        <section id="stepRecap" class="hidden space-y-6">
+          <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 sm:p-8 space-y-6 print:p-0 print:border-none print:shadow-none">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-100 print:hidden">
+              <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center font-bold">
+                  <i data-lucide="award" class="w-5 h-5"></i>
+                </div>
+                <div>
+                  <h2 class="text-lg sm:text-xl font-bold text-slate-900">Rekapitulasi Hasil Belajar Siswa</h2>
+                  <p class="text-xs text-slate-500">Lembar portofolio digital capaian kriteria dan pseudocode akhir.</p>
+                </div>
+              </div>
+
+              <div class="flex items-center space-x-2">
+                <button onclick="window.App.pageLatihan.copyRecapSummary()" class="px-3 py-1.5 border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold rounded-xl flex items-center space-x-1.5 transition">
+                  <i data-lucide="copy" class="w-4 h-4"></i>
+                  <span>Salin Ringkasan</span>
+                </button>
+                <button onclick="window.App.pageLatihan.printRecap()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md flex items-center space-x-1.5 transition">
+                  <i data-lucide="printer" class="w-4 h-4"></i>
+                  <span>Cetak / Simpan PDF</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Kartu Identitas Siswa / Kelompok -->
+            <div class="p-4 bg-slate-50 rounded-2xl border border-slate-200" id="recapIdentityBox"></div>
+
+            <!-- Ringkasan Kriteria A1.1 s/d A3.4 -->
+            <div class="p-4 bg-white rounded-2xl border border-slate-200" id="recapCriteriaSummary"></div>
+
+            <!-- Pseudocode Final yang Disusun Siswa -->
+            <div class="space-y-2">
+              <h4 class="font-bold text-xs uppercase tracking-wider text-slate-600">Pseudocode Algoritma Final:</h4>
+              <div id="recapPseudocodeOutput" class="p-4 bg-slate-900 text-slate-100 rounded-2xl font-mono text-xs overflow-x-auto"></div>
+            </div>
+
+            <!-- KARTU PENTING KHUSUS AKTIVITAS 4 (SESUAI SPESIFIKASI) -->
+            <div class="p-5 rounded-2xl bg-amber-50 border-2 border-amber-300 text-amber-950 flex items-start space-x-3.5 shadow-sm">
+              <div class="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center flex-shrink-0 mt-0.5">
+                <i data-lucide="file-pen" class="w-5 h-5"></i>
+              </div>
+              <div class="space-y-1">
+                <h4 class="font-bold text-sm text-amber-900">Petunjuk Pengerjaan Aktivitas 4</h4>
+                <p class="text-xs sm:text-sm text-amber-800 leading-relaxed font-semibold">
+                  Aktivitas 4 dikerjakan di lembar LKS kertas bersama kelompokmu.
+                </p>
+                <p class="text-xs text-amber-700">
+                  Diskusikan perbedaan karakteristik antara struktur <em>If-Then</em> dan <em>If-Then-Else</em> berdasarkan data pengujian skenario yang telah kalian buktikan di atas, lalu tuliskan refleksimu pada lembar LKS cetak.
+                </p>
+              </div>
+            </div>
+
+            <!-- Tombol Navigasi Bawah -->
+            <div class="pt-4 flex items-center justify-between border-t border-slate-100 print:hidden">
+              <button onclick="window.App.pageLatihan.goToStep(4)" class="px-4 py-2.5 border border-slate-300 rounded-xl text-xs font-bold text-slate-600 hover:bg-slate-50 transition">
+                Kembali ke Aktivitas 3
+              </button>
+              <button onclick="window.App.pageLatihan.goToStep(0)" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition">
+                Mulai dari Awal
+              </button>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- =====================================================================
+           KOLOM KANAN: PANEL KRITERIA & PSEUDOCODE REAL-TIME (4 Kolom Desktop)
+           ===================================================================== -->
+      <aside class="lg:col-span-4 space-y-6">
+
+        <!-- PANEL KRITERIA PENYELESAIAN LKS (A1.1 - A3.4) -->
+        <section class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 sm:p-5 space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div>
+              <div class="flex items-center space-x-1.5">
+                <i data-lucide="check-square" class="w-4 h-4 text-emerald-600"></i>
+                <h3 class="font-bold text-sm text-slate-800">Kriteria Penyelesaian LKS</h3>
+              </div>
+              <p class="text-[11px] text-slate-400">Target capaian A1.1 &ndash; A3.4</p>
+            </div>
+            <span id="criteriaAchievedBadge" class="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold bg-slate-100 text-slate-700 border border-slate-200">
+              0 / 12 Tercapai
+            </span>
+          </div>
+
+          <!-- Tombol Evaluasi Kriteria -->
+          <button id="btnCheckCriteria" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-98 text-white rounded-xl text-xs font-bold shadow-md shadow-blue-500/20 flex items-center justify-center space-x-2 transition">
+            <i data-lucide="search-check" class="w-4 h-4"></i>
+            <span>Periksa Jawaban Saya</span>
+          </button>
+
+          <!-- Daftar Kriteria Interaktif & Petunjuk 3 Tingkat -->
+          <div id="criteriaListContainer" class="max-h-[480px] overflow-y-auto pr-1 space-y-2.5"></div>
+        </section>
+
+        <!-- PANEL PSEUDOCODE REAL-TIME -->
+        <section class="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 sm:p-5 space-y-3">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+            <div class="flex items-center space-x-1.5">
+              <i data-lucide="code" class="w-4 h-4 text-blue-600"></i>
+              <h3 class="font-bold text-sm text-slate-800">Pseudocode Real-Time</h3>
+            </div>
+            <button onclick="window.App.pageLatihan.copyPseudocode()" class="p-1 rounded-lg hover:bg-slate-100 text-slate-500 hover:text-slate-800 transition" title="Salin Pseudocode">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+            </button>
+          </div>
+
+          <div class="bg-slate-50 rounded-xl p-3 border border-slate-200 font-mono text-xs max-h-[360px] overflow-y-auto" id="pseudocodeOutput"></div>
+        </section>
+
+      </aside>
+
+    </div>
+  </main>
+
+  <!-- =========================================================================
+       MODAL TUTORIAL BANTUAN PENGGUNAAN
+       ========================================================================= -->
+  <div id="tutorialModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 space-y-5 shadow-2xl border border-slate-200">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center space-x-2.5">
+          <div class="w-9 h-9 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+            <i data-lucide="book-open" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <h4 class="font-bold text-sm text-slate-900">Panduan Halaman Latihan LKS</h4>
+            <p class="text-xs text-slate-500">Cara menyelesaikan aktivitas LKS Digital</p>
+          </div>
+        </div>
+        <button id="btnCloseTutorialModal" class="p-1.5 rounded-lg text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs text-slate-600 leading-relaxed">
+        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-start space-x-2.5">
+          <span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs flex-shrink-0">1</span>
+          <div>
+            <strong class="text-slate-800 block">Ikuti Alur Pembelajaran (Stepper)</strong>
+            Mulailah dari identitas kelompok &rarr; skenario &rarr; Aktivitas 1 &rarr; Aktivitas 2 &rarr; Aktivitas 3.
+          </div>
+        </div>
+        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-start space-x-2.5">
+          <span class="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs flex-shrink-0">2</span>
+          <div>
+            <strong class="text-slate-800 block">Tombol "Periksa Jawaban Saya"</strong>
+            Evaluasi kriteria tidak otomatis saat mengetik. Tekan tombol tersebut untuk memeriksa ketepatan jawabanmu.
+          </div>
+        </div>
+        <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-start space-x-2.5">
+          <span class="w-6 h-6 rounded-full bg-amber-500 text-white flex items-center justify-center font-bold text-xs flex-shrink-0">3</span>
+          <div>
+            <strong class="text-slate-800 block">Petunjuk Bertingkat 3 Level</strong>
+            Jika kesulitan, buka accordion petunjuk. Level 3 (kunci solusi) akan terbuka otomatis setelah 2 kali pemeriksaan yang belum tepat.
+          </div>
+        </div>
+      </div>
+
+      <button id="btnFinishTutorial" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold transition shadow-md">
+        Saya Mengerti, Lanjutkan Belajar!
+      </button>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       TOAST GLOBAL NOTIFIKASI
+       ========================================================================= -->
+  <div id="globalToast" class="fixed bottom-6 right-6 z-50 bg-slate-900 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-2xl border border-slate-700 flex items-center space-x-2 transition-all duration-300 opacity-0 translate-y-4 pointer-events-none">
+    <i data-lucide="info" class="w-4 h-4 text-blue-400"></i>
+    <span id="globalToastText">Pesan notifikasi</span>
+  </div>
+
+  <!-- =========================================================================
+       SKRIP JAVASCRIPT KLASIK (window.App Namespace, Tanpa ES Modules)
+       ========================================================================= -->
+  <script src="js/config.js" defer></script>
+  <script src="js/audio.js" defer></script>
+  <script src="js/engine.js" defer></script>
+  <script src="js/pseudocode.js" defer></script>
+  <script src="js/stage-kantin.js" defer></script>
+  <script src="js/blocks.js" defer></script>
+  <script src="js/common.js" defer></script>
+  <script src="js/criteria.js" defer></script>
+  <script src="js/page-latihan.js" defer></script>
+</body>
+</html>

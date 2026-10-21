@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Simulasi Percabangan Algoritma - SMA Fase E</title>
+
+  <!-- Google Fonts: Space Grotesk & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS via CDN 3.4.17 dengan Konfigurasi Inline -->
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#eff6ff',
+              100: '#dbeafe',
+              500: '#3b82f6',
+              600: '#2563eb', // Biru Utama
+              700: '#1d4ed8'
+            }
+          },
+          fontFamily: {
+            sans: ['Space Grotesk', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace']
+          }
+        }
+      }
+    };
+  </script>
+
+  <!-- Lucide Icons CDN (Versi Terpasang Tetap 0.469.0) -->
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.469.0/dist/umd/lucide.min.js"></script>
+
+  <!-- Kustom CSS Terpisah (Animasi, Pola Latar, Print, Accessibility) -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-grid-pattern text-slate-800 antialiased min-h-screen flex flex-col selection:bg-blue-600 selection:text-white pb-16 lg:pb-6">
+
+  <!-- =========================================================================
+       HEADER UTAMA: Penukar Tema, Suara, Mode Guru, Rekap & Bantuan
+       ========================================================================= -->
+  <header class="bg-white/95 backdrop-blur-md border-b border-slate-200 sticky top-0 z-40 px-4 py-2.5 shadow-sm">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <!-- Judul Media Pembelajaran -->
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white shadow-md shadow-blue-500/30">
+          <i data-lucide="git-branch" class="w-6 h-6"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-base sm:text-lg text-slate-900 leading-tight">Simulasi Percabangan</h1>
+          <p class="text-xs text-slate-500 hidden sm:block">Informatika Fase E &bull; Percabangan If-Then &amp; If-Then-Else</p>
+        </div>
+      </div>
+
+      <!-- Navigasi Dua Halaman: Simulasi vs Latihan LKS -->
+      <nav class="flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs font-bold shadow-inner">
+        <a href="index.html" class="px-3 py-1.5 rounded-lg bg-blue-600 text-white shadow-sm flex items-center space-x-1.5 transition" title="Halaman Simulasi yang sedang aktif">
+          <i data-lucide="play-circle" class="w-4 h-4"></i>
+          <span>Simulasi</span>
+        </a>
+        <a href="latihan.html" class="px-3 py-1.5 rounded-lg text-slate-600 hover:text-slate-900 flex items-center space-x-1.5 transition" title="Beralih ke Halaman Latihan LKS">
+          <i data-lucide="file-check-2" class="w-4 h-4 text-slate-500"></i>
+          <span>Latihan LKS</span>
+        </a>
+      </nav>
+
+      <!-- Segmented Control Penukar Tema (F4: Kereta | Kantin) -->
+      <div class="bg-slate-100 p-1 rounded-xl flex items-center border border-slate-200 shadow-inner">
+        <button id="btnThemeKereta" class="px-3 py-1.5 rounded-lg text-xs font-bold bg-white text-blue-700 shadow-sm flex items-center space-x-1.5 transition" title="Pindah ke Simulasi Kereta Api">
+          <i data-lucide="train-front" class="w-4 h-4"></i>
+          <span>Perlintasan Kereta</span>
+        </button>
+        <button id="btnThemeKantin" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-600 hover:text-slate-900 flex items-center space-x-1.5 transition" title="Pindah ke Kasir Kantin Sekolah">
+          <i data-lucide="store" class="w-4 h-4"></i>
+          <span>Kantin Sekolah</span>
+        </button>
+      </div>
+
+      <!-- Bar Aksi Tambahan: Suara, Rekap, Mode Guru, Bantuan -->
+      <div class="flex items-center space-x-2">
+        <!-- Tombol Audio (Default Bisu / Muted) -->
+        <button id="btnToggleAudio" class="p-2 sm:px-3 sm:py-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center space-x-1.5 transition focus:ring-2 focus:ring-blue-500" title="Sakelar Efek Suara">
+          <i data-lucide="volume-x" class="w-4 h-4 text-slate-500" id="audioIcon"></i>
+          <span class="hidden md:inline" id="audioLabel">Suara: Mati</span>
+        </button>
+
+        <!-- Tombol Rekap Capaian Siswa (T6) -->
+        <button id="btnOpenRecapModal" class="p-2 sm:px-3 sm:py-1.5 rounded-xl border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold flex items-center space-x-1.5 transition focus:ring-2 focus:ring-blue-500" title="Rekap Hasil Belajar">
+          <i data-lucide="list-checks" class="w-4 h-4"></i>
+          <span class="hidden md:inline">Rekap</span>
+        </button>
+
+        <!-- Sakelar Mode Guru / Proyektor (T5) -->
+        <!-- <button id="btnToggleTeacherMode" class="p-2 sm:px-3 sm:py-1.5 rounded-xl border border-slate-200 bg-slate-100 text-slate-700 hover:bg-slate-200 text-xs font-bold flex items-center space-x-1.5 transition focus:ring-2 focus:ring-indigo-500" title="Mode Guru / Tampilan Proyektor Kelas">
+          <i data-lucide="presentation" class="w-4 h-4 text-indigo-600"></i>
+          <span class="hidden md:inline">Mode Guru</span>
+        </button> -->
+
+        <!-- Tombol Bantuan / Tutorial (T8) -->
+        <button id="btnOpenTutorialModal" class="p-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 hover:text-slate-900 transition focus:ring-2 focus:ring-blue-500" title="Panduan Penggunaan">
+          <i data-lucide="circle-help" class="w-5 h-5"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- =========================================================================
+       DRAWER MODE GURU / PROYEKTOR KELAS (T5)
+       Panel Khusus Guru untuk Memuat Kasus Pembelajaran & Contoh Bug Siswa
+       ========================================================================= -->
+  <aside id="teacherDrawerPanel" class="hidden bg-indigo-950 text-indigo-100 border-b border-indigo-800 px-4 py-3 select-none no-print">
+    <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center space-x-2">
+        <div class="p-1.5 bg-indigo-800 rounded-lg text-amber-300">
+          <i data-lucide="presentation" class="w-5 h-5"></i>
+        </div>
+        <div>
+          <strong class="text-sm font-bold text-white block">Panel Kendali Guru (Proyektor Kelas)</strong>
+          <span class="text-xs text-indigo-200">Muat cepat contoh solusi atau miskonsepsi siswa untuk diskusi kelas.</span>
+        </div>
+      </div>
+      <div class="flex flex-wrap items-center gap-2">
+        <button id="btnTeacherLoadSolution" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold flex items-center space-x-1.5 shadow transition">
+          <i data-lucide="circle-check" class="w-4 h-4"></i>
+          <span>Muat Contoh Solusi</span>
+        </button>
+        <button id="btnTeacherLoadBug" class="px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-xs font-semibold flex items-center space-x-1.5 shadow transition">
+          <i data-lucide="bug" class="w-4 h-4"></i>
+          <span>Muat Contoh Bug / Salah</span>
+        </button>
+        <button id="btnTeacherResetAll" class="px-3 py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold flex items-center space-x-1.5 shadow transition">
+          <i data-lucide="trash-2" class="w-4 h-4"></i>
+          <span>Reset Semua Data</span>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- =========================================================================
+       AREA UTAMA APLIKASI
+       ========================================================================= -->
+  <main class="flex-1 max-w-7xl mx-auto w-full p-3 sm:p-4 md:p-6 space-y-5">
+
+    <!-- PANEL MISI PEMBELAJARAN BERTAHAP (T1) -->
+    <section id="missionHeaderPanel" aria-label="Misi Pembelajaran"></section>
+
+    <!-- =======================================================================
+         BARIS 1 DESKTOP: Palet (3) | Workspace Blok (5) | Pseudocode Realtime (4)
+         ======================================================================= -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+      
+      <!-- KOLOM 1: PALET BLOK (3 Kolom) -->
+      <div id="tabPanelBlocks" class="lg:col-span-3 bg-white rounded-2xl border border-slate-200 shadow-sm p-4 h-full">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3">
+          <h2 class="font-bold text-sm text-slate-800 flex items-center space-x-2">
+            <i data-lucide="puzzle" class="w-4 h-4 text-blue-600"></i>
+            <span>Palet Blok Logika</span>
+          </h2>
+          <span class="text-[10px] bg-slate-100 text-slate-500 font-bold px-2 py-0.5 rounded-full uppercase">Pilih &amp; Tarik</span>
+        </div>
+        <div id="blockPaletteList"></div>
+      </div>
+
+      <!-- KOLOM 2: WORKSPACE SUSUN BLOK (5 Kolom) -->
+      <div id="blockWorkspace" class="lg:col-span-5 bg-white rounded-2xl border border-slate-200 shadow-sm p-4 h-full">
+        <!-- Toolbar Atas Workspace -->
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3 select-none">
+          <div class="flex items-center space-x-2">
+            <h2 class="font-bold text-sm text-slate-800 flex items-center space-x-2">
+              <i data-lucide="code-xml" class="w-4 h-4 text-blue-600"></i>
+              <span>Area Algoritma Siswa</span>
+            </h2>
+            <span class="text-xs text-slate-400 font-mono">(Maks 4 Blok)</span>
+          </div>
+
+          <div class="flex items-center space-x-1">
+            <!-- Tombol Undo / Redo (30+ Langkah Riwayat) -->
+            <button id="btnUndo" class="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition" title="Undo (Ctrl+Z)">
+              <i data-lucide="undo-2" class="w-4 h-4"></i>
+            </button>
+            <button id="btnRedo" class="p-1.5 rounded-lg border border-slate-200 text-slate-600 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition" title="Redo (Ctrl+Shift+Z)">
+              <i data-lucide="redo-2" class="w-4 h-4"></i>
+            </button>
+            <!-- Tombol Kosongkan Workspace -->
+            <button onclick="window.App.blocks.clearWorkspace()" class="px-2.5 py-1.5 rounded-lg border border-slate-200 text-slate-600 hover:text-rose-600 hover:border-rose-300 text-xs font-semibold transition" title="Kosongkan Semua Blok">
+              <i data-lucide="rotate-ccw" class="w-3.5 h-3.5 inline mr-1"></i>
+              <span>Kosongkan</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Daftar Blok Tersusun -->
+        <div id="blockWorkspaceList"></div>
+      </div>
+
+      <!-- KOLOM 3: PANEL PSEUDOCODE REALTIME LKS (4 Kolom) (F2) -->
+      <div id="tabPanelPseudo" class="hidden lg:block lg:col-span-4 bg-white rounded-2xl border border-slate-200 shadow-sm p-4 h-full">
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100 mb-3 select-none">
+          <h2 class="font-bold text-sm text-slate-800 flex items-center space-x-2">
+            <i data-lucide="code-xml" class="w-4 h-4 text-blue-600"></i>
+            <span>Pseudocode Real-Time</span>
+          </h2>
+          <span class="text-[10px] bg-blue-50 text-blue-700 font-bold px-2 py-0.5 rounded-full font-mono">Format LKS</span>
+        </div>
+        <div id="pseudocodeOutput"></div>
+      </div>
+    </section>
+
+    <!-- =======================================================================
+         BARIS 2 DESKTOP: Panggung Simulasi + Monitor (7) | Kontrol & Tabel Uji (5)
+         ======================================================================= -->
+    <section class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+      
+      <!-- KOLOM KIRI: PANGGUNG VISUALISASI SVG + MONITOR VARIABEL (7 Kolom) (F1, F5) -->
+      <div id="tabPanelSim" class="hidden lg:block lg:col-span-7 bg-white rounded-2xl border border-slate-200 shadow-sm p-4 space-y-4">
+        <div class="flex items-center justify-between pb-2 border-b border-slate-100 select-none">
+          <h2 class="font-bold text-sm text-slate-800 flex items-center space-x-2">
+            <i data-lucide="train-front" class="w-4 h-4 text-blue-600"></i>
+            <span>Panggung Visualisasi Dampak Logika</span>
+          </h2>
+          <span class="text-xs text-slate-400 font-sans">Simulasi Interaktif Real-Time</span>
+        </div>
+
+        <!-- Kanvas SVG Inline Panggung -->
+        <div id="stageCanvasContainer"></div>
+
+        <!-- Monitor Variabel Melayang di Bawah Panggung (F5) -->
+        <div class="bg-slate-50 border border-slate-200 rounded-2xl p-3">
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center space-x-1.5">
+              <i data-lucide="gauge" class="w-4 h-4 text-blue-600"></i>
+              <span>Monitor Nilai Variabel di Memori Komputer</span>
+            </span>
+            <span class="text-[10px] text-slate-400 font-sans">Nilai berubah berkedip kuning</span>
+          </div>
+          <div id="variableMonitorContent"></div>
+        </div>
+      </div>
+
+      <!-- KOLOM KANAN: KONTROL, BILAH NARASI, TABEL PENGUJIAN LKS, & LOG (5 Kolom) (F3, T2, T3, T7) -->
+      <div id="tabPanelTest" class="hidden lg:block lg:col-span-5 space-y-4">
+        
+        <!-- Kartu Bilah Kontrol Eksekusi & Narasi -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 space-y-3">
+          <div class="flex flex-wrap items-center justify-between gap-2 select-none">
+            <div class="flex items-center space-x-1.5">
+              <!-- Tombol Play / Pause -->
+              <button id="btnPlaySim" class="px-3.5 py-2 bg-blue-600 hover:bg-blue-700 active:scale-98 text-white rounded-xl text-xs font-bold flex items-center space-x-1.5 shadow-sm transition">
+                <i data-lucide="play" class="w-4 h-4"></i>
+                <span>Jalankan</span>
+              </button>
+              <button id="btnPauseSim" class="hidden px-3.5 py-2 bg-amber-500 hover:bg-amber-600 active:scale-98 text-white rounded-xl text-xs font-bold flex items-center space-x-1.5 shadow-sm transition">
+                <i data-lucide="pause" class="w-4 h-4"></i>
+                <span>Jeda</span>
+              </button>
+
+              <!-- Tombol Langkah (Step) -->
+              <button id="btnStepSim" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold flex items-center space-x-1.5 border border-slate-200 transition" title="Jalankan Satu Langkah Saja">
+                <i data-lucide="step-forward" class="w-4 h-4"></i>
+                <span>Langkah</span>
+              </button>
+
+              <!-- Tombol Reset / Ulangi -->
+              <button id="btnResetSim" class="p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 transition" title="Ulangi Simulasi">
+                <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+              </button>
+            </div>
+
+            <div class="flex items-center space-x-2">
+              <!-- Kecepatan -->
+              <select id="speedSelector" class="bg-slate-100 border border-slate-200 rounded-lg text-xs font-semibold px-2 py-1.5 text-slate-700 focus:ring-2 focus:ring-blue-500" title="Kecepatan Simulasi">
+                <option value="0.5">0.5x</option>
+                <option value="1" selected>1.0x</option>
+                <option value="2">2.0x</option>
+              </select>
+
+              <!-- Tombol Langsung Hasil -->
+              <button id="btnSkipSim" class="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 text-slate-600 text-xs font-semibold" title="Langsung Tampilkan Hasil Akhir">
+                Langsung Hasil
+              </button>
+            </div>
+          </div>
+
+          <!-- Bilah Narasi Eksekusi Bahasa Indonesia (aria-live="polite") (F3) -->
+          <div class="bg-blue-50/70 border border-blue-200 rounded-xl p-3 text-xs text-blue-950 flex items-start space-x-2" aria-live="polite">
+            <i data-lucide="info" class="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0"></i>
+            <span id="executionNarrationText" class="font-medium leading-relaxed">
+              Program siap. Klik <strong>Jalankan</strong> untuk menguji alur logika percabangan.
+            </span>
+          </div>
+
+          <!-- Sakelar Mode Prediksi Dulu (T3) -->
+          <div class="pt-1 flex items-center justify-between border-t border-slate-100">
+            <span class="text-xs text-slate-600">Latihan berpikir kritis:</span>
+            <button id="togglePredictionMode" class="px-3 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200 flex items-center space-x-1.5 transition">
+              <i data-lucide="eye" class="w-3.5 h-3.5 text-purple-600"></i>
+              <span>Tebak Hasil (Mode Prediksi)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Tabel Pengujian Skenario LKS (T2) -->
+        <div id="scenarioTestTableContainer"></div>
+
+        <!-- Log Riwayat Eksekusi (T7) -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+          <div class="flex items-center justify-between pb-2 border-b border-slate-100 mb-2">
+            <span class="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center space-x-1.5">
+              <i data-lucide="list-checks" class="w-3.5 h-3.5 text-slate-500"></i>
+              <span>Log Riwayat Pengujian</span>
+            </span>
+            <span class="text-[10px] text-slate-400 font-mono">Riwayat Percobaan</span>
+          </div>
+          <div id="executionLogsContainer"></div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+
+  <!-- =========================================================================
+       TAB BAR BAWAH KHUSUS PERANGKAT MOBILE (< lg)
+       Navigasi Cepat: Blok | Simulasi | Pseudocode | Uji
+       ========================================================================= -->
+  <nav id="mobileTabBar" class="lg:hidden fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 z-50 px-2 py-1 shadow-lg no-print">
+    <div class="grid grid-cols-4 text-center">
+      <button class="mobile-tab-btn py-2 text-blue-600 font-bold flex flex-col items-center justify-center text-[10px]" data-tab="tabPanelBlocks">
+        <i data-lucide="puzzle" class="w-4 h-4 mb-0.5"></i>
+        <span>Blok</span>
+      </button>
+      <button class="mobile-tab-btn py-2 text-slate-500 flex flex-col items-center justify-center text-[10px]" data-tab="tabPanelSim">
+        <i data-lucide="train-front" class="w-4 h-4 mb-0.5"></i>
+        <span>Simulasi</span>
+      </button>
+      <button class="mobile-tab-btn py-2 text-slate-500 flex flex-col items-center justify-center text-[10px]" data-tab="tabPanelPseudo">
+        <i data-lucide="code-xml" class="w-4 h-4 mb-0.5"></i>
+        <span>Pseudocode</span>
+      </button>
+      <button class="mobile-tab-btn py-2 text-slate-500 flex flex-col items-center justify-center text-[10px]" data-tab="tabPanelTest">
+        <i data-lucide="table-2" class="w-4 h-4 mb-0.5"></i>
+        <span>Uji &amp; Log</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- =========================================================================
+       MODAL REKAP HASIL BELAJAR SISWA (T6) (Mendukung Cetak Rapi)
+       ========================================================================= -->
+  <div id="recapModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div id="recapModalContent" class="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200 p-5 space-y-4">
+      <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div class="flex items-center space-x-2">
+          <div class="w-8 h-8 rounded-lg bg-blue-100 text-blue-700 flex items-center justify-center">
+            <i data-lucide="list-checks" class="w-5 h-5"></i>
+          </div>
+          <h3 class="font-bold text-base text-slate-900">Rekap Hasil Belajar Percabangan</h3>
+        </div>
+        <button id="btnCloseRecapModal" class="p-1 rounded-lg text-slate-400 hover:text-slate-600 no-print">
+          <i data-lucide="circle-x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Konten Rekap Dinamis -->
+      <div id="recapModalDynamicContent"></div>
+
+      <!-- Tombol Salin Ringkasan & Cetak -->
+      <div class="flex items-center justify-end space-x-2 pt-3 border-t border-slate-100 no-print">
+        <button id="btnCopyRecapText" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold flex items-center space-x-1.5 transition">
+          <i data-lucide="copy" class="w-4 h-4"></i>
+          <span>Salin Ringkasan</span>
+        </button>
+        <button id="btnPrintRecap" class="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-bold flex items-center space-x-1.5 shadow transition">
+          <i data-lucide="receipt" class="w-4 h-4"></i>
+          <span>Cetak Lembar Portofolio</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL TUTORIAL 3 LANGKAH CEPAT (T8) (Kurang dari 2 Menit Paham)
+       ========================================================================= -->
+  <div id="tutorialModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-200 p-6 space-y-4">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+        <div class="flex items-center space-x-2">
+          <span class="w-7 h-7 bg-blue-100 text-blue-700 rounded-lg flex items-center justify-center font-bold text-xs font-mono">PBL</span>
+          <h3 class="font-bold text-base text-slate-900">Panduan Kilat (3 Langkah)</h3>
+        </div>
+        <button id="btnCloseTutorialModal" class="p-1 rounded-lg text-slate-400 hover:text-slate-600">
+          <i data-lucide="circle-x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs sm:text-sm text-slate-600">
+        <div class="flex items-start space-x-3 p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+          <span class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs flex-shrink-0">1</span>
+          <div>
+            <strong class="text-slate-800 block">Seret atau Ketuk Blok</strong>
+            Pilih struktur <strong>If-Then</strong> atau <strong>If-Then-Else</strong> dari palet kiri. Tentukan syarat kondisi dan aksinya.
+          </div>
+        </div>
+
+        <div class="flex items-start space-x-3 p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+          <span class="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs flex-shrink-0">2</span>
+          <div>
+            <strong class="text-slate-800 block">Perhatikan Pseudocode LKS</strong>
+            Blok yang Anda buat otomatis berubah menjadi pseudocode baku di panel kanan, lengkap dengan baris dan pewarnaan sintaks.
+          </div>
+        </div>
+
+        <div class="flex items-start space-x-3 p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+          <span class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs flex-shrink-0">3</span>
+          <div>
+            <strong class="text-slate-800 block">Jalankan &amp; Amati Dampaknya</strong>
+            Klik tombol <strong>Jalankan</strong> atau <strong>Langkah</strong>. Amati pergerakan palang kereta atau cetak struk kasir dan buktikan di tabel uji!
+          </div>
+        </div>
+      </div>
+
+      <div class="pt-2">
+        <button id="btnFinishTutorial" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-98 text-white rounded-xl text-xs font-bold transition shadow-md">
+          Saya Mengerti, Mulai Eksplorasi!
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL PERAYAAN KELULUSAN MISI
+       ========================================================================= -->
+  <div id="celebrationModal" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-sm w-full p-6 text-center space-y-4 shadow-2xl border border-slate-200">
+      <div class="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-inner ring-8 ring-emerald-50">
+        <i data-lucide="circle-check" class="w-10 h-10"></i>
+      </div>
+      <div>
+        <h4 id="celebrationTitle" class="font-bold text-base text-slate-900">Misi Selesai!</h4>
+        <p id="celebrationDesc" class="text-xs text-slate-500 mt-1">Seluruh skenario pengujian berhasil dilewati dengan hasil yang benar.</p>
+      </div>
+      <button id="btnCelebrationNext" class="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-md transition">
+        Lanjut ke Misi Berikutnya
+      </button>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       TOAST GLOBAL NOTIFIKASI
+       ========================================================================= -->
+  <div id="globalToast" class="fixed bottom-6 right-6 z-50 bg-slate-900 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow-2xl border border-slate-700 flex items-center space-x-2 transition-all duration-300 opacity-0 translate-y-4 pointer-events-none">
+    <i data-lucide="info" class="w-4 h-4 text-blue-400"></i>
+    <span id="globalToastText">Pesan notifikasi</span>
+  </div>
+
+  <!-- =========================================================================
+       SKRIP JAVASCRIPT KLASIK (window.App Namespace, Order Defer Sesuai Spesifikasi)
+       ========================================================================= -->
+  <script src="js/config.js" defer></script>
+  <script src="js/audio.js" defer></script>
+  <script src="js/engine.js" defer></script>
+  <script src="js/pseudocode.js" defer></script>
+  <script src="js/stage-kereta.js" defer></script>
+  <script src="js/stage-kantin.js" defer></script>
+  <script src="js/blocks.js" defer></script>
+  <script src="js/missions.js" defer></script>
+  <script src="js/ui.js" defer></script>
+  <script src="js/main.js" defer></script>
+</body>
+</html>
